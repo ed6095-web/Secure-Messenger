@@ -81,6 +81,7 @@ function appendMessage(msgData) {
                 <span>${formatTime(msgData.timestamp)}</span>
             </div>
             <div class="message-bubble">${contentHtml}</div>
+        `;
     }
 
     messagesContainer.appendChild(wrapper);
