@@ -177,6 +177,12 @@ function setupChatUI(data) {
     switchView('chat-view');
     messagesContainer.innerHTML = '';
     
+    appendMessage({
+        type: 'system',
+        message: 'Welcome to the secure room.',
+        timestamp: Date.now()
+    });
+    
     // Clear inputs in landing view
     usernameInput.value = '';
     roomCodeInput.value = '';
@@ -190,7 +196,7 @@ function updateUserCount(count) {
 }
 
 // Copy to clipboard
-document.getElementById('display-room-code').parentElement.addEventListener('click', () => {
+document.getElementById('copy-room-btn').addEventListener('click', () => {
     if (currentRoom) {
         navigator.clipboard.writeText(currentRoom);
         copyToast.classList.add('show');

@@ -53,12 +53,18 @@
             <div class="chat-container glass">
                 <!-- Header -->
                 <div class="chat-header">
-                    <div class="room-info">
-                        <h2>Room: <span id="display-room-code" title="Click to copy">
-                            <span class="copy-toast" id="copy-toast">Copied!</span>
-                        </span></h2>
-                        <span id="user-count-badge" class="badge">0/5 Users</span>
-                        <span id="host-badge" class="badge host-role hidden">Host</span>
+                    <div class="header-left">
+                        <div class="room-title-row">
+                            <span class="room-label">Room:</span>
+                            <span id="user-count-badge" class="badge">0/5 Users</span>
+                            <span id="host-badge" class="badge host-role hidden">Host</span>
+                        </div>
+                        <div class="room-code-row">
+                            <div class="room-code-container" id="copy-room-btn" title="Click to copy">
+                                <span id="display-room-code"></span>
+                                <span class="copy-toast" id="copy-toast">Copied!</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="chat-controls">
                         <button id="exit-btn" class="btn danger-outline">Exit</button>
