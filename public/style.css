@@ -82,6 +82,7 @@ body {
     margin-bottom: 5px;
     background: linear-gradient(to right, #818cf8, #c084fc);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -345,6 +346,11 @@ input:focus {
 
 #message-form input:focus {
     background: rgba(255, 255, 255, 0.1);
+}
+
+#message-form button {
+    width: auto;
+    padding: 12px 24px;
 }
 
 @media (max-width: 600px) {
