@@ -25,7 +25,6 @@ const replyContext = document.getElementById('reply-context');
 const replyTargetName = document.getElementById('reply-target-name');
 const replyTargetText = document.getElementById('reply-target-text');
 const cancelReplyBtn = document.getElementById('cancel-reply-btn');
-const transitionScreen = document.getElementById('transition-screen');
 const copyToast = document.getElementById('copy-toast');
 
 // State
@@ -69,7 +68,7 @@ function appendMessage(msgData) {
     
     if (msgData.type === 'system') {
         wrapper.classList.add('system');
-        wrapper.innerHTML = `<div class="message-bubble">${msgData.message}</div>`;
+        wrapper.innerHTML = `<div class="message-bubble system-bubble">${msgData.message}</div>`;
     } else {
         const isMine = msgData.senderId === socket.id;
         wrapper.classList.add(isMine ? 'mine' : 'other');
@@ -163,36 +162,27 @@ joinRoomBtn.addEventListener('click', () => {
 
 // Setup UI after successfully joining/creating
 function setupChatUI(data) {
-    switchView('transition-screen');
+    currentRoom = data.roomCode;
+    isHost = data.isHost;
+    currentMaxUsers = data.maxUsers || 5;
     
-    setTimeout(() => {
-        currentRoom = data.roomCode;
-        isHost = data.isHost;
-        currentMaxUsers = data.maxUsers || 5;
-        
-        displayRoomCode.textContent = currentRoom;
-        updateUserCount(data.users.length);
+    displayRoomCode.textContent = currentRoom;
+    updateUserCount(data.users.length);
 
-        if (isHost) {
-            hostBadge.classList.remove('hidden');
-            deleteRoomBtn.classList.remove('hidden');
-        }
+    if (isHost) {
+        hostBadge.classList.remove('hidden');
+        deleteRoomBtn.classList.remove('hidden');
+    }
 
-        switchView('chat-view');
-        messagesContainer.innerHTML = '';
-        appendMessage({
-            type: 'system',
-            message: isHost ? 'You created the room. Share the code to invite others.' : 'You joined the room.',
-            timestamp: Date.now()
-        });
-        
-        // Clear inputs in landing view
-        usernameInput.value = '';
-        roomCodeInput.value = '';
-        
-        // Play join sound
-        playSound('join');
-    }, 1500); // Fake a secure establishing connection
+    switchView('chat-view');
+    messagesContainer.innerHTML = '';
+    
+    // Clear inputs in landing view
+    usernameInput.value = '';
+    roomCodeInput.value = '';
+    
+    // Play join sound
+    playSound('join');
 }
 
 function updateUserCount(count) {
@@ -325,12 +315,8 @@ socket.on('user_stop_typing', () => {
 });
 
 socket.on('room_destroyed', (reason) => {
-    document.body.classList.add('glitch-effect');
-    setTimeout(() => {
-        alert(reason);
-        document.body.classList.remove('glitch-effect');
-        resetChat();
-    }, 900);
+    alert(reason);
+    resetChat();
 });
 
 socket.on('disconnect', () => {
@@ -359,29 +345,3 @@ function playSound(type) {
         }
     } catch(e) {}
 }
-
-// Best-Effort Anti-Screenshot Features
-window.addEventListener('blur', () => {
-    // When the window loses focus (often happens when opening snipping tool)
-    document.body.classList.add('blurred');
-});
-
-window.addEventListener('focus', () => {
-    document.body.classList.remove('blurred');
-});
-
-// Disable right click mapping
-document.addEventListener('contextmenu', event => event.preventDefault());
-
-// Prevent common shortcut keys (Print Screen, Save, Print)
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'PrintScreen') {
-        navigator.clipboard.writeText(''); // Attempt to clear clipboard
-        document.body.classList.add('blurred');
-        setTimeout(() => document.body.classList.remove('blurred'), 1000);
-    }
-    // Disable Ctrl+P (Print) and Ctrl+S (Save)
-    if (e.ctrlKey && (e.key === 'p' || e.key === 's')) {
-        e.preventDefault();
-    }
-});
