@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Real-Time Messaging</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Landing View -->
+        <div id="landing-view" class="view active">
+            <div class="card glass">
+                <h1>Secure Chat</h1>
+                <p class="subtitle">Ephemeral, private, and fast.</p>
+                
+                <div class="input-group">
+                    <input type="text" id="username-input" placeholder="Enter your username" maxlength="20">
+                </div>
+                
+                <div class="action-divider">
+                    <hr><span>OR JOIN</span><hr>
+                </div>
+
+                <div class="create-section">
+                    <button id="create-room-btn" class="btn primary">Create New Room</button>
+                </div>
+
+                <div class="join-section">
+                    <div class="input-group">
+                        <input type="text" id="room-code-input" placeholder="Enter code" maxlength="6" style="text-transform: uppercase;">
+                        <button id="join-room-btn" class="btn secondary">Join Room</button>
+                    </div>
+                </div>
+                
+                <div id="landing-error" class="error-msg"></div>
+            </div>
+        </div>
+
+        <!-- Chat View -->
+        <div id="chat-view" class="view">
+            <div class="chat-container glass">
+                <!-- Header -->
+                <div class="chat-header">
+                    <div class="room-info">
+                        <h2>Room: <span id="display-room-code"></span></h2>
+                        <span id="user-count-badge" class="badge">0/5 Users</span>
+                        <span id="host-badge" class="badge host-role hidden">Host</span>
+                    </div>
+                    <div class="chat-controls">
+                        <button id="exit-btn" class="btn danger-outline">Exit</button>
+                        <button id="delete-room-btn" class="btn danger hidden">Delete Room</button>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="chat-messages" id="messages-container">
+                    <!-- Messages will be injected here -->
+                </div>
+
+                <!-- Input -->
+                <div class="chat-input-area">
+                    <form id="message-form">
+                        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+                        <button type="submit" class="btn primary">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The io client side library is served magically by socket.io backend -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
