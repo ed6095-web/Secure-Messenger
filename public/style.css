@@ -612,9 +612,24 @@ input:focus, .dropdown:focus {
     .chat-header {
         flex-direction: column;
         gap: 15px;
-        align-items: flex-start;
+        align-items: center;
+        text-align: center;
     }
+    
+    .room-info h2 {
+        flex-direction: column;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
     .badge {
         margin-right: 5px;
+        margin-bottom: 5px;
+        display: inline-block;
+    }
+    
+    .chat-controls {
+        width: 100%;
+        justify-content: center;
     }
 }
