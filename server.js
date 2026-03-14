@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
     });
 
     // When a message is sent
-    socket.on('send_message', ({ roomCode, message }) => {
+    socket.on('send_message', ({ roomCode, message, replyTo }) => {
         const room = rooms[roomCode];
         if (room && room.users.has(socket.id)) {
             const username = room.users.get(socket.id).username;
@@ -123,12 +123,26 @@ io.on('connection', (socket) => {
                 type: 'chat',
                 username: username,
                 message: message,
+                replyTo: replyTo,
                 timestamp: Date.now(),
                 senderId: socket.id
             });
 
             resetRoomTimeout(roomCode);
         }
+    });
+
+    // Typing Indicators
+    socket.on('typing', (roomCode) => {
+        const room = rooms[roomCode];
+        if (room && room.users.has(socket.id)) {
+            const username = room.users.get(socket.id).username;
+            socket.to(roomCode).emit('user_typing', username);
+        }
+    });
+
+    socket.on('stop_typing', (roomCode) => {
+        socket.to(roomCode).emit('user_stop_typing');
     });
 
     // When a file is sent
