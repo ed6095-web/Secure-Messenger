@@ -296,10 +296,6 @@ input:focus, .dropdown:focus {
     font-weight: 600;
 }
 
-.room-code-row {
-    display: flex;
-}
-
 .room-code-container {
     font-family: 'JetBrains Mono', monospace;
     font-size: 1.2rem;
