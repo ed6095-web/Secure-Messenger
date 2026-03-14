@@ -8,6 +8,7 @@ const usernameInput = document.getElementById('username-input');
 const createRoomBtn = document.getElementById('create-room-btn');
 const roomCodeInput = document.getElementById('room-code-input');
 const joinRoomBtn = document.getElementById('join-room-btn');
+const maxUsersInput = document.getElementById('max-users-input');
 const landingError = document.getElementById('landing-error');
 
 const displayRoomCode = document.getElementById('display-room-code');
@@ -18,10 +19,12 @@ const deleteRoomBtn = document.getElementById('delete-room-btn');
 const messagesContainer = document.getElementById('messages-container');
 const messageForm = document.getElementById('message-form');
 const messageInput = document.getElementById('message-input');
+const fileUpload = document.getElementById('file-upload');
 
 // State
 let currentRoom = null;
 let currentUsername = null;
+let currentMaxUsers = 5;
 let isHost = false;
 
 // Helpers
@@ -62,13 +65,22 @@ function appendMessage(msgData) {
         const isMine = msgData.senderId === socket.id;
         wrapper.classList.add(isMine ? 'mine' : 'other');
         
+        // Handle images vs text vs files
+        let contentHtml = '';
+        if (msgData.type === 'image') {
+            contentHtml = `<img src="${msgData.data}" alt="Shared Image">`;
+        } else if (msgData.type === 'file') {
+            contentHtml = `<a href="${msgData.data}" download="${msgData.fileName}" class="file-link">📁 Download ${msgData.fileName}</a>`;
+        } else {
+            contentHtml = msgData.message;
+        }
+
         wrapper.innerHTML = `
             <div class="message-meta">
                 <span>${isMine ? 'You' : msgData.username}</span>
                 <span>${formatTime(msgData.timestamp)}</span>
             </div>
-            <div class="message-bubble">${msgData.message}</div>
-        `;
+            <div class="message-bubble">${contentHtml}</div>
     }
 
     messagesContainer.appendChild(wrapper);
@@ -90,9 +102,11 @@ function resetChat() {
 createRoomBtn.addEventListener('click', () => {
     currentUsername = getUsername();
     if (!currentUsername) return;
+    
+    const maxUsers = parseInt(maxUsersInput.value, 10);
 
     createRoomBtn.disabled = true;
-    socket.emit('create_room', currentUsername, (response) => {
+    socket.emit('create_room', { username: currentUsername, maxUsers: maxUsers }, (response) => {
         createRoomBtn.disabled = false;
         if (response.success) {
             setupChatUI(response);
@@ -127,6 +141,7 @@ joinRoomBtn.addEventListener('click', () => {
 function setupChatUI(data) {
     currentRoom = data.roomCode;
     isHost = data.isHost;
+    currentMaxUsers = data.maxUsers || 5;
     
     displayRoomCode.textContent = currentRoom;
     updateUserCount(data.users.length);
@@ -150,7 +165,7 @@ function setupChatUI(data) {
 }
 
 function updateUserCount(count) {
-    userCountBadge.textContent = `${count}/5 Users`;
+    userCountBadge.textContent = `${count}/${currentMaxUsers} Users`;
 }
 
 // Event Listeners - Chat
@@ -161,6 +176,34 @@ messageForm.addEventListener('submit', (e) => {
         socket.emit('send_message', { roomCode: currentRoom, message: txt });
         messageInput.value = '';
     }
+});
+
+// File Upload Handler
+fileUpload.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file || !currentRoom) return;
+
+    // 5MB limit
+    if (file.size > 5 * 1024 * 1024) {
+        alert("File must be smaller than 5MB");
+        fileUpload.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const base64Data = evt.target.result;
+        const isImage = file.type.startsWith('image/');
+        
+        socket.emit('send_file', {
+            roomCode: currentRoom,
+            fileName: file.name,
+            fileData: base64Data,
+            isImage: isImage
+        });
+    };
+    reader.readAsDataURL(file);
+    fileUpload.value = ''; // Reset input
 });
 
 exitBtn.addEventListener('click', () => {
@@ -196,5 +239,31 @@ socket.on('disconnect', () => {
     if (currentRoom) {
         alert('Disconnected from server.');
         resetChat();
+    }
+});
+
+// Best-Effort Anti-Screenshot Features
+window.addEventListener('blur', () => {
+    // When the window loses focus (often happens when opening snipping tool)
+    document.body.classList.add('blurred');
+});
+
+window.addEventListener('focus', () => {
+    document.body.classList.remove('blurred');
+});
+
+// Disable right click mapping
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// Prevent common shortcut keys (Print Screen, Save, Print)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'PrintScreen') {
+        navigator.clipboard.writeText(''); // Attempt to clear clipboard
+        document.body.classList.add('blurred');
+        setTimeout(() => document.body.classList.remove('blurred'), 1000);
+    }
+    // Disable Ctrl+P (Print) and Ctrl+S (Save)
+    if (e.ctrlKey && (e.key === 'p' || e.key === 's')) {
+        e.preventDefault();
     }
 });

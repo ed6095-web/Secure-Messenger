@@ -19,6 +19,16 @@
                     <input type="text" id="username-input" placeholder="Enter your username" maxlength="20">
                 </div>
                 
+                <div class="input-group">
+                    <select id="max-users-input" class="dropdown">
+                        <option value="2">Max 2 Users (1-on-1)</option>
+                        <option value="3">Max 3 Users</option>
+                        <option value="4">Max 4 Users</option>
+                        <option value="5" selected>Max 5 Users</option>
+                        <option value="10">Max 10 Users</option>
+                    </select>
+                </div>
+                
                 <div class="action-divider">
                     <hr><span>OR JOIN</span><hr>
                 </div>
@@ -62,6 +72,10 @@
                 <!-- Input -->
                 <div class="chat-input-area">
                     <form id="message-form">
+                        <label for="file-upload" class="btn secondary file-lbl" title="Attach Image/File">
+                            📎
+                        </label>
+                        <input type="file" id="file-upload" class="hidden" accept="image/*,.pdf,.txt,.zip">
                         <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
                         <button type="submit" class="btn primary">Send</button>
                     </form>

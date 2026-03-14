@@ -5,7 +5,10 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+// Increase maxHttpBufferSize to 5MB to handle file/image Base64 uploads safely
+const io = new Server(server, {
+    maxHttpBufferSize: 5e6
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -26,7 +29,10 @@ const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
 io.on('connection', (socket) => {
     // When a user creates a room
-    socket.on('create_room', (username, callback) => {
+    socket.on('create_room', (data, callback) => {
+        const username = typeof data === 'string' ? data : data.username;
+        const maxUsers = data.maxUsers ? parseInt(data.maxUsers, 10) : 5;
+
         let roomCode = generateRoomCode();
         while (rooms[roomCode]) {
             roomCode = generateRoomCode();
@@ -35,6 +41,7 @@ io.on('connection', (socket) => {
         const room = {
             id: roomCode,
             host: socket.id,
+            maxUsers: maxUsers,
             users: new Map(), // socket.id -> { username, joinedAt, ip }
             timeout: null
         };
@@ -58,6 +65,7 @@ io.on('connection', (socket) => {
             success: true,
             roomCode: roomCode,
             isHost: true,
+            maxUsers: room.maxUsers,
             users: Array.from(room.users.values()).map(u => u.username)
         });
         
@@ -72,8 +80,8 @@ io.on('connection', (socket) => {
             return callback({ success: false, message: 'Invalid room code.' });
         }
 
-        if (room.users.size >= 5) {
-            return callback({ success: false, message: 'Room is full (max 5 users).' });
+        if (room.users.size >= room.maxUsers) {
+            return callback({ success: false, message: `Room is full (max ${room.maxUsers} users).` });
         }
 
         const userObj = {
@@ -92,6 +100,7 @@ io.on('connection', (socket) => {
             success: true,
             roomCode: roomCode,
             isHost: false,
+            maxUsers: room.maxUsers,
             users: Array.from(room.users.values()).map(u => u.username)
         });
 
@@ -114,6 +123,25 @@ io.on('connection', (socket) => {
                 type: 'chat',
                 username: username,
                 message: message,
+                timestamp: Date.now(),
+                senderId: socket.id
+            });
+
+            resetRoomTimeout(roomCode);
+        }
+    });
+
+    // When a file is sent
+    socket.on('send_file', ({ roomCode, fileName, fileData, isImage }) => {
+        const room = rooms[roomCode];
+        if (room && room.users.has(socket.id)) {
+            const username = room.users.get(socket.id).username;
+            
+            io.to(roomCode).emit('receive_message', {
+                type: isImage ? 'image' : 'file',
+                username: username,
+                data: fileData,
+                fileName: fileName,
                 timestamp: Date.now(),
                 senderId: socket.id
             });
