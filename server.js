@@ -5,9 +5,9 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-// Increase maxHttpBufferSize to 5MB to handle file/image Base64 uploads safely
+// Increase maxHttpBufferSize to 50MB to handle file/image Base64 uploads safely
 const io = new Server(server, {
-    maxHttpBufferSize: 5e6
+    maxHttpBufferSize: 50e6
 });
 
 app.use(express.static(path.join(__dirname, 'public')));

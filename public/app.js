@@ -184,9 +184,9 @@ fileUpload.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file || !currentRoom) return;
 
-    // 5MB limit
-    if (file.size > 5 * 1024 * 1024) {
-        alert("File must be smaller than 5MB");
+    // 50MB limit
+    if (file.size > 50 * 1024 * 1024) {
+        alert("File must be smaller than 50MB");
         fileUpload.value = '';
         return;
     }
